@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <header class="bg-blue-600 text-white py-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold">Welcome to Modern</h1>
+            <nav>
+                {% if user.is_authenticated %}
+                    <span class="mr-4">Welcome, {{ user.username }}</span>
+                    <a href="{% url 'create_post' %}" class="text-white  mr-4">Create a Post</a>
+                    <a href="{% url 'logout' %}" class="text-white ">Logout</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="text-white  mr-4">Login</a>
+                    <a href="{% url 'signup' %}" class="text-white ">Signup</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto py-8">
+        <h2 class="text-2xl  mb-6">Posts</h2>
+
+        {% for post in posts %}
+            <div class="bg-white rounded shadow-md p-6 mb-6">
+                <p class="mb-4">{{ post.content }}</p>
+                {% if post.image %}
+                    <img src="{{ post.image.url }}" alt="Post Image" class="w-full h-auto max-w-xs mb-4">
+                {% endif %}
+                <p class=" text-gray-500">By <span class="font-bold">{{ post.user.username }}</span> | {{ post.created_at }}</p>
+
+                <div class="mt-4">
+                    <a href="{% url 'like_post' post.id %}" class="text-blue-600 ">Like</a>
+
+                    <form method="POST" action="{% url 'comment_post' post.id %}" class="mt-4">
+                        {% csrf_token %}
+                        <div class="flex items-center">
+                            <input type="text" name="content" placeholder="Add a comment" class="border rounded p-2 w-full mr-2">
+                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded ">Comment</button>
+                        </div>
+                    </form>
+
+                    {% for comment in post.comment_set.all %}
+                        <div class="mt-4">
+                            <p><span class="font-bold">{{ comment.user.username }}</span>: {{ comment.content }}</p>
+                        </div>
+                    {% endfor %}
+
+                    {% if post.user == user %}
+                        <a href="{% url 'delete_post' post.id %}" class="text-red-600  mt-4 block">Delete Post</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </main>
+
+    <footer class="bg-gray-800 text-white text-center py-4">
+        <p>&copy; 2025 Modern Social Media. All rights reserved.</p>
+    </footer>
+</body>
+</html>
