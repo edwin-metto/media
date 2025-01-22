@@ -13,18 +13,21 @@
             <nav>
                 {% if user.is_authenticated %}
                     <span class="mr-4">Welcome, {{ user.username }}</span>
-                    <a href="{% url 'create_post' %}" class="text-white  mr-4">Create a Post</a>
-                    <a href="{% url 'logout' %}" class="text-white ">Logout</a>
+                    <a href="{% url 'user_followers' user.id %}" class="text-white mr-4">Followers</a>
+                    <a href="{% url 'user_following' user.id %}" class="text-white mr-4">Following</a>
+                    <a href="{% url 'create_post' %}" class="text-white mr-4">Create a Post</a>
+                    <a href="{% url 'search_users' %}" class="text-white mr-4">Search Users</a>
+                    <a href="{% url 'logout' %}" class="text-white">Logout</a>
                 {% else %}
-                    <a href="{% url 'login' %}" class="text-white  mr-4">Login</a>
-                    <a href="{% url 'signup' %}" class="text-white ">Signup</a>
+                    <a href="{% url 'login' %}" class="text-white mr-4">Login</a>
+                    <a href="{% url 'signup' %}" class="text-white">Signup</a>
                 {% endif %}
             </nav>
         </div>
     </header>
 
     <main class="container mx-auto py-8">
-        <h2 class="text-2xl  mb-6">Posts</h2>
+        <h2 class="text-2xl mb-6">Posts</h2>
 
         {% for post in posts %}
             <div class="bg-white rounded shadow-md p-6 mb-6">
@@ -32,27 +35,51 @@
                 {% if post.image %}
                     <img src="{{ post.image.url }}" alt="Post Image" class="w-full h-auto max-w-xs mb-4">
                 {% endif %}
-                <p class=" text-gray-500">By <span class="font-bold">{{ post.user.username }}</span> | {{ post.created_at }}</p>
+                <p class="text-gray-500">By <span class="font-bold">{{ post.user.username }}</span> | {{ post.created_at }}</p>
 
                 <div class="mt-4">
-                    <a href="{% url 'like_post' post.id %}" class="text-blue-600 ">Like</a>
+                    <a href="{% url 'like_post' post.id %}" class="text-blue-600">Like</a>
 
+                    
                     <form method="POST" action="{% url 'comment_post' post.id %}" class="mt-4">
                         {% csrf_token %}
                         <div class="flex items-center">
                             <input type="text" name="content" placeholder="Add a comment" class="border rounded p-2 w-full mr-2">
-                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded ">Comment</button>
+                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Comment</button>
                         </div>
                     </form>
 
-                    {% for comment in post.comment_set.all %}
-                        <div class="mt-4">
+                    
+                    {% for comment in post.top_level_comments %}
+                        <div class="mt-4 ml-4 border-l-2 pl-4">
                             <p><span class="font-bold">{{ comment.user.username }}</span>: {{ comment.content }}</p>
+
+                            
+
+                            
+                            <button onclick="toggleReplyForm({{ comment.id }})" class="text-blue-600 text-sm">Reply</button>
+
+                            
+                            <form id="reply-form-{{ comment.id }}" method="POST" action="{% url 'comment_post' post.id %}" class="mt-2 hidden">
+                                {% csrf_token %}
+                                <div class="flex items-center">
+                                    <input type="text" name="content" placeholder="Write a reply..." class="border rounded p-2 w-full mr-2">
+                                    <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Reply</button>
+                                </div>
+                            </form>
+
+                            
+                            {% for reply in comment.replies.all %}
+                                <div class="mt-4 ml-4 border-l-2 pl-4">
+                                    <p><span class="font-bold">{{ reply.user.username }}</span>: {{ reply.content }}</p>
+                                </div>
+                            {% endfor %}
                         </div>
                     {% endfor %}
 
                     {% if post.user == user %}
-                        <a href="{% url 'delete_post' post.id %}" class="text-red-600  mt-4 block">Delete Post</a>
+                        <a href="{% url 'delete_post' post.id %}" class="text-red-600 mt-4 block">Delete Post</a>
                     {% endif %}
                 </div>
             </div>
@@ -62,5 +89,16 @@
     <footer class="bg-gray-800 text-white text-center py-4">
         <p>&copy; 2025 Modern Social Media. All rights reserved.</p>
     </footer>
+
+    <script>
+        function toggleReplyForm(commentId) {
+            const form = document.getElementById(`reply-form-${commentId}`);
+            if (form.classList.contains('hidden')) {
+                form.classList.remove('hidden');
+            } else {
+                form.classList.add('hidden');
+            }
+        }
+    </script>
 </body>
 </html>

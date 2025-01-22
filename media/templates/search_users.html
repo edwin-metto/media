@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Users</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        async function toggleFollow(userId, button) {
+            const response = await fetch(`/toggle-follow/${userId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+            });
+            const data = await response.json();
+            if (response.ok) {
+                button.textContent = data.message.includes('Unfollow') ? 'Follow' : 'Unfollow';
+            } else {
+                alert(data.error || 'Something went wrong.');
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center py-10">
+    <h2 class="text-2xl f mb-6 text-gray-800">Search Users</h2>
+    <form method="get" action="" class="w-full max-w-md mb-8">
+        <div class="flex items-center border-b border-gray-400 py-2">
+            <input 
+                type="text" 
+                name="q" 
+                placeholder="Search for users" 
+                value="{{ query }}"
+                class="appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none" 
+            />
+            <button 
+                type="submit" 
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            >
+                Search
+            </button>
+        </div>
+    </form>
+
+    {% if query %}
+        <h3 class="text-lg font-semibold mb-4 text-gray-700">Results for "{{ query }}":</h3>
+        {% if users %}
+            <ul class="bg-white shadow rounded-lg p-6 w-full max-w-md">
+                {% for user in users %}
+                    <li class="border-b last:border-none py-3 flex items-center justify-between">
+                        <span>{{ user.username }}</span>
+                        <button 
+                        class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded"
+                        onclick="toggleFollow({{ user.id }}, this)"
+                    >
+                        {% if user.id in followed_users %}
+                            Unfollow
+                        {% else %}
+                            Follow
+                        {% endif %}
+                    </button>
+                    
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-gray-600">No users found.</p>
+        {% endif %}
+    {% endif %}
+</body>
+</html>

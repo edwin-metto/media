@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Following</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <header class="bg-blue-600 text-white py-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold">{{ user_profile.username }} is Following</h1>
+            <a href="{% url 'home' %}" class="text-white">Back to Home</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto py-8">
+        <h2 class="text-2xl mb-6">Following</h2>
+        <ul>
+            {% for follow in following %}
+                <li class="bg-white rounded shadow-md p-4 mb-4">
+                    {{ follow.followed.username }}
+                </li>
+            {% empty %}
+                <p>Not following anyone yet.</p>
+            {% endfor %}
+        </ul>
+    </main>
+
+    <footer class="bg-gray-800 text-white text-center py-4">
+        <p>&copy; 2025 Modern Social Media. All rights reserved.</p>
+    </footer>
+</body>
+</html>
